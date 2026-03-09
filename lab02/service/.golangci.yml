@@ -1,0 +1,41 @@
+version: "2"
+
+run:
+  tests: true
+  issues-exit-code: 1
+
+output:
+  formats:
+    text:
+      path: stdout
+      print-linter-name: true
+      print-issued-lines: true
+
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - errcheck
+    - unused
+    - gocritic
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+    - gci
+
+  settings:
+    gci:
+      custom-order: true
+      sections:
+        - standard
+        - default
+        - prefix(service-courier)
+
+  exclusions:
+    generated: lax
+    paths:
+      - migrations
+      - docs
+      - third_party$
