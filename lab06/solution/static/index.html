@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FTP Client</title>
+<style>
+  * { box-sizing: border-box; font-family: sans-serif; }
+  body { max-width: 700px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 1.4em; }
+  .conn-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .conn-form input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+  .conn-form input[name=host] { width: 140px; }
+  .conn-form input[name=port] { width: 70px; }
+  .conn-form input[name=user], .conn-form input[name=pass] { width: 100px; }
+  button { padding: 6px 14px; border: none; border-radius: 4px; cursor: pointer; background: #4a90d9; color: #fff; }
+  button:hover { background: #357abd; }
+  button.danger { background: #d9534f; }
+  button.danger:hover { background: #c9302c; }
+  #status { margin: 8px 0; font-weight: bold; }
+  .file-list { list-style: none; padding: 0; }
+  .file-list li { padding: 6px 10px; border: 1px solid #eee; margin: 2px 0; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
+  .file-list li:hover { background: #f5f5f5; }
+  .file-list li.dir-entry { cursor: pointer; }
+  .file-list li.dir-entry .dir-name { color: #4a90d9; font-weight: bold; }
+  .file-actions button { margin-left: 4px; padding: 4px 10px; font-size: 0.85em; }
+  .toolbar { margin: 12px 0; display: flex; gap: 8px; }
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
+  .modal.active { display: flex; }
+  .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 500px; max-width: 90%; }
+  .modal-content h3 { margin-top: 0; }
+  .modal-content input, .modal-content textarea { width: 100%; padding: 8px; margin: 6px 0; border: 1px solid #ccc; border-radius: 4px; }
+  .modal-content textarea { height: 200px; font-family: monospace; }
+  .modal-buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+  #output { background: #f8f8f8; border: 1px solid #ddd; padding: 12px; border-radius: 4px; white-space: pre-wrap; font-family: monospace; min-height: 60px; margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<h1>FTP Client</h1>
+
+<div class="conn-form">
+  <input name="host" placeholder="Host" value="127.0.0.1">
+  <input name="port" placeholder="Port" value="2121">
+  <input name="user" placeholder="User" value="test">
+  <input name="pass" placeholder="Pass" value="test" type="password">
+  <button onclick="connect()">Connect</button>
+  <button class="danger" onclick="disconnect()">Disconnect</button>
+</div>
+
+<div id="status">Not connected</div>
+
+<div class="toolbar">
+  <button onclick="refresh()">Refresh</button>
+  <button onclick="showCreate()">New File</button>
+</div>
+
+<ul class="file-list" id="files"></ul>
+
+<div id="output"></div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3 id="modal-title">Create File</h3>
+    <input id="modal-name" placeholder="Filename">
+    <textarea id="modal-content" placeholder="File content"></textarea>
+    <div class="modal-buttons">
+      <button onclick="closeModal()">Cancel</button>
+      <button id="modal-save" onclick="saveFile()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, opts);
+  return r.json();
+}
+
+async function connect() {
+  const d = await api('/connect', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      host: $('[name=host]').value,
+      port: $('[name=port]').value,
+      user: $('[name=user]').value,
+      pass: $('[name=pass]').value,
+    })
+  });
+  if (d.error) { $('#status').textContent = 'Error: ' + d.error; return; }
+  $('#status').textContent = 'Connected';
+  refresh();
+}
+
+async function disconnect() {
+  await api('/disconnect', {method: 'POST'});
+  $('#status').textContent = 'Disconnected';
+  $('#files').innerHTML = '';
+}
+
+async function cwd(dir) {
+  const d = await api('/cwd', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({dir})
+  });
+  if (d.error) { $('#output').textContent = 'Error: ' + d.error; return; }
+  refresh();
+}
+
+async function refresh() {
+  const d = await api('/list');
+  if (d.error) { $('#status').textContent = 'Error: ' + d.error; return; }
+  const ul = $('#files');
+  ul.innerHTML = '';
+
+  // ".." entry to go back
+  const backLi = document.createElement('li');
+  backLi.className = 'dir-entry';
+  const backSpan = document.createElement('span');
+  backSpan.className = 'dir-name';
+  backSpan.textContent = '..';
+  backLi.appendChild(backSpan);
+  backLi.addEventListener('click', () => cwd('..'));
+  ul.appendChild(backLi);
+
+  (d.files || []).forEach(f => {
+    const isDir = f.endsWith('/');
+    const li = document.createElement('li');
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = f;
+
+    if (isDir) {
+      li.className = 'dir-entry';
+      nameSpan.className = 'dir-name';
+      li.addEventListener('click', () => cwd(f.slice(0, -1)));
+      li.appendChild(nameSpan);
+    } else {
+      li.appendChild(nameSpan);
+      const actions = document.createElement('span');
+      actions.className = 'file-actions';
+      const mkBtn = (label, cls, fn) => {
+        const b = document.createElement('button');
+        b.textContent = label;
+        if (cls) b.className = cls;
+        b.addEventListener('click', fn);
+        return b;
+      };
+      actions.appendChild(mkBtn('Read', '', () => readFile(f)));
+      actions.appendChild(mkBtn('Edit', '', () => showEdit(f)));
+      actions.appendChild(mkBtn('Delete', 'danger', () => deleteFile(f)));
+      li.appendChild(actions);
+    }
+    ul.appendChild(li);
+  });
+}
+
+async function readFile(name) {
+  const d = await api('/read?name=' + encodeURIComponent(name));
+  if (d.error) { $('#output').textContent = 'Error: ' + d.error; return; }
+  $('#output').textContent = `=== ${name} ===\n${d.content}`;
+}
+
+async function deleteFile(name) {
+  if (!confirm('Delete ' + name + '?')) return;
+  const d = await api('/delete?name=' + encodeURIComponent(name), {method: 'DELETE'});
+  if (d.error) { $('#output').textContent = 'Error: ' + d.error; return; }
+  refresh();
+}
+
+let editMode = false;
+
+function showCreate() {
+  editMode = false;
+  $('#modal-title').textContent = 'Create File';
+  $('#modal-name').value = '';
+  $('#modal-name').disabled = false;
+  $('#modal-content').value = '';
+  $('#modal').classList.add('active');
+}
+
+async function showEdit(name) {
+  editMode = true;
+  $('#modal-title').textContent = 'Edit: ' + name;
+  $('#modal-name').value = name;
+  $('#modal-name').disabled = true;
+  const d = await api('/read?name=' + encodeURIComponent(name));
+  $('#modal-content').value = d.error ? '' : d.content;
+  $('#modal').classList.add('active');
+}
+
+function closeModal() { $('#modal').classList.remove('active'); }
+
+async function saveFile() {
+  const name = $('#modal-name').value;
+  const content = $('#modal-content').value;
+  if (!name) { alert('Enter filename'); return; }
+  const url = editMode ? '/update' : '/create';
+  const method = editMode ? 'PUT' : 'POST';
+  const d = await api(url, {
+    method,
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name, content})
+  });
+  if (d.error) { alert('Error: ' + d.error); return; }
+  closeModal();
+  refresh();
+}
+</script>
+</body>
+</html>

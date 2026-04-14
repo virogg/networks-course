@@ -8,23 +8,41 @@
 
 #### Вопросы
 1. Выберите один UDP-пакет. По этому пакету определите, сколько полей содержит UDP-заголовок.
-   - <!-- todo -->
+   - <img src="./images/wireshark/img1.jpg"><br>
+     - 4 поля:
+       - `Source port`
+       - `Destination port`
+       - `Length`
+       - `Checksum`
 2. Определите длину (в байтах) для каждого поля UDP-заголовка, обращаясь к отображаемой
    информации о содержимом полей в данном пакете.
-   - <!-- todo -->
+   - <img src="./images/wireshark/img2_1.jpg"><br>
+     - 2 байта
+   - <img src="./images/wireshark/img2_2.jpg"><br>
+     - 2 байта 
+   - <img src="./images/wireshark/img2_3.jpg"><br>
+     - 2 байта
+   - <img src="./images/wireshark/img2_4.jpg"><br>
+     - 2 байта
 3. Значение в поле Length (Длина) – это длина чего?
-   - <!-- todo -->
+   - <img src="./images/wireshark/img3.jpg"><br>
+     - Длина всего пакета, то есть `UDP Payload` + длина заголовка (8 байт)
 4. Какое максимальное количество байт может быть включено в полезную нагрузку UDP-пакета?
-   - <!-- todo -->
+   - Вычитаем размер заголовка и UDP:
+     - $(2^{16} - 1) - 8 - 20 = 65.507$ байт
 5. Чему равно максимально возможное значение номера порта отправителя?
-   - <!-- todo -->
+   - $2^{16} - 1 = 65.535$ байт
 6. Какой номер протокола для протокола UDP? Дайте ответ и для шестнадцатеричной и
    десятеричной системы. Чтобы ответить на этот вопрос, вам необходимо заглянуть в поле
    Протокол в IP-дейтаграмме, содержащей UDP-сегмент.
-   - <!-- todo -->
+   - <img src="./images/wireshark/img6.jpg"><br>
+     - Dec -- `17`
+     - Hex -- `0x11`
 7. Проверьте UDP-пакет и ответный UDP-пакет, отправляемый вашим хостом. Определите
    отношение между номерами портов в двух пакетах.
-   - <!-- todo -->
+   - Номера портов поменялись местами (`62647` $\leftrightarrow$ `443`)
+      - <img src="./images/wireshark/img7_1.jpg"><br>
+      - <img src="./images/wireshark/img7_2.jpg"><br>
 
 ## Программирование. FTP
 
@@ -39,7 +57,21 @@
 Приложите скриншоты.
 
 #### Скрины
-todo
+- Подключение к FTP серверу
+   - <img src="./images/filezilla/img1_1.jpg"><br>
+   - <img src="./images/filezilla/img1_2.jpg"><br>
+- Получить содержимое директории (`/lab06`)
+   - <img src="./images/filezilla/img2_1.jpg"><br>
+   - <img src="./images/filezilla/img2_2.jpg"><br>
+- Скачать файл
+   - <img src="./images/filezilla/img3_1.jpg"><br>
+   - <img src="./images/filezilla/img3_2.jpg"><br>
+- Изменить содержимое файла
+   - <img src="./images/filezilla/img4_1.jpg"><br>
+   - <img src="./images/filezilla/img4_2.jpg"><br>
+- Создать файл
+   - <img src="./images/filezilla/img5_1.jpg"><br>
+   - <img src="./images/filezilla/img5_2.jpg"><br>
 
 ### FTP клиент (3 балла)
 Создайте консольное приложение FTP клиента для работы с файлами по FTP. Приложение может
@@ -73,7 +105,23 @@ todo
 содержимое файла можно выводить в главном окне.
 
 #### Демонстрация работы
-todo
+- <img src="./images/coding/img2_1.jpg"><br>
+  - Получили содержимое рабочей директории
+- <img src="./images/coding/img2_6.png"><br>
+  - Просмотреть содержимое файла
+- <img src="./images/coding/img2_2.jpg"><br>
+  - Изменить содержимое файла
+- <img src="./images/coding/img2_3.jpg"><br>
+  - Содержимое изменилось
+- <img src="./images/coding/img2_4.jpg"><br>
+- <img src="./images/coding/img2_5.jpg"><br>
+  - Файл удалился из рабочей директории
+- <img src="./images/coding/img2_7.png"><br>
+  - Создать файл
+- <img src="./images/coding/img2_8.png"><br>
+  - Файл появился в GUI
+- <img src="./images/coding/img2_9.png"><br>
+  - Файл появился в рабочей директории
 
 ### FTP сервер (5 баллов)
 Реализуйте свой FTP сервер, который работает поверх TCP сокетов. Вы можете использовать FTP клиента, реализованного на прошлом этапе, для тестирования своего сервера.
@@ -87,4 +135,12 @@ todo
 - QUIT
 
 #### Демонстрация работы
-todo
+- <img src="./images/coding/img3.png"><br>
+  - Часть команд, которые вызывались из прошлого задания (из GUI)
+- <img src="./images/coding/img3_1.png"><br>
+  - Логи клиента (выйти за рабочую директорию НЕ можем)
+- <img src="./images/coding/img3_2.png"><br>
+  - Логи сервера
+- <img src="./images/coding/img3_3.png"><br>
+  - Файл скачался
+  - Файл добавился в нужную директорию
