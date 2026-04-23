@@ -43,7 +43,7 @@
      - Sequence Number: `0` (relative sequence number)
      - Sequence Number (raw): `1075568308`
      - Acknowledgement Number: `1` (relative ack number)
-     - Acknowledgement number (raw): `474741127`
+     - Acknowledgement number (raw): `474741127` (`474741126` + `1`)
      - Определяется по флагам `Syn` и `Acknowledgement`
 5. Какой порядковый номер у TCP-сегмента, содержащего команду POST протокола HTTP?
    (для нахождения команды POST вам потребуется проникнуть внутрь поля содержимого
