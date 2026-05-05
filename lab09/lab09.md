@@ -162,7 +162,7 @@ IP-адрес и диапазон портов должны передавать
 1. 
    1. С каждым $\text{RTT}$ окно увеличивается на $1$ сегмент. Чтобы оно выросло с $\dfrac{W}{2}$ до $W$, нужно $\dfrac{W}{2}$ шагов <br>
    2. Тогда всего отправлено пакетов: $S = \sum_{i=0}^{\frac{W}{2}}(\frac{W}{2} + i) \underset{\text{арифм. прог.}}{\overset{\text{сумма}}{=}} \dfrac{3W^2}{8} + \dfrac{3W}{4}$ <br>
-   3. $L = \dfrac{\text{# потерянных пакетов}}{\text{# отправленных пакетов}} = \dfrac{1}{S} = \dfrac{1}{\frac{3W^2}{8} + \frac{3W}{4}}$ <br>
+   3. $L = \dfrac{\text{кол-во потерянных пакетов}}{\text{кол-во отправленных пакетов}} = \dfrac{1}{S} = \dfrac{1}{\frac{3W^2}{8} + \frac{3W}{4}}$ <br>
 2. 
    1. $V_{\text{avg}} = \dfrac{\text{общее число переданных байт}}{\text{время передачи}} = \dfrac{S\cdot\text{MSS}}{(\frac{W}{2} + 1)\cdot\text{RTT}} = \dfrac{(\frac{W}{2} + 1)\cdot\frac{3W}{4}\cdot\text{MSS}}{(\frac{W}{2} + 1)\cdot\text{RTT}} = \dfrac{3W}{4}\cdot\dfrac{\text{MSS}}{\text{RTT}}$
    2. При большом $W$: $\dfrac{3W^2}{8} \gg \dfrac{3W}{4}$
